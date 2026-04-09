@@ -43,9 +43,9 @@ pipeline {
       steps {
         sh """
         gcloud container clusters get-credentials $CLUSTER --zone $ZONE
-        kubectl get deployment demo-app || kubectl apply -f kubernetes/Deployment.yaml
-        kubectl set image deployment/demo-app \
-         demo=$IMAGE:$BUILD_NUMBER
+        kubectl get deployment opentelemetry-demo-adservice || kubectl apply -f kubernetes/ad/deploy.yaml
+        kubectl set image deployment/opentelemetry-demo-adservice \
+         adservice=$IMAGE:$BUILD_NUMBER
         """
       }
     }
