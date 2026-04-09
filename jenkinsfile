@@ -19,11 +19,6 @@ pipeline {
     //   }
     // }
 
-    stage('Maven Build') {
-      steps {
-        sh 'mvn clean package'
-      }
-    }
     stage('Authenticate to GCP') {
       steps {
         withCredentials([file(credentialsId: 'gcp-sa-key', variable: 'GCP_KEY')]) {
@@ -38,7 +33,7 @@ pipeline {
     stage('Build Image') {
       steps {
         sh """
-        docker build -t $IMAGE:$BUILD_NUMBER .
+        docker build -t $IMAGE:$BUILD_NUMBER ./src/ad/Dockerfile
         docker push $IMAGE:$BUILD_NUMBER
         """
       }
