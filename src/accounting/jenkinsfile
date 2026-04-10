@@ -1,0 +1,62 @@
+pipeline {
+  agent any
+
+  environment {
+    PROJECT_ID = "dev-uk-123"
+    REGION     = "us-central1"
+    REPO       = "accounting"
+    IMAGE_NAME = "demo-app"
+    IMAGE = "us-central1-docker.pkg.dev/$PROJECT_ID/$REPO/demo-app"
+    CLUSTER    = "nitwallah"
+    ZONE       = "us-central1-c"
+  }
+
+  stages {
+
+    // stage('Checkout Code') {
+    //   steps {
+    //     git 'https://github.com/your-org/java-gke-app.git'
+    //   }
+    // }
+
+    stage('Authenticate to GCP') {
+      steps {
+        withCredentials([file(credentialsId: 'gcp-sa-key', variable: 'GCP_KEY')]) {
+          sh '''
+            gcloud auth activate-service-account --key-file=$GCP_KEY
+            gcloud config set project $PROJECT_ID
+            gcloud auth configure-docker us-central1-docker.pkg.dev
+          '''
+        }
+      }
+    }
+    stage('Build Image') {
+      steps {
+        sh """
+        docker build -t $IMAGE:$BUILD_NUMBER .
+        docker push $IMAGE:$BUILD_NUMBER
+        """
+      }
+    }
+
+    stage('Deploy to GKE') {
+      steps {
+        sh """
+        gcloud container clusters get-credentials $CLUSTER --zone $ZONE
+        kubectl get deployment opentelemetry-demo-accountingservice || kubectl apply -f kubernetes/accounting/deploy.yaml
+        kubectl set image deployment/opentelemetry-demo-accountingservice \
+         adservice=$IMAGE:$BUILD_NUMBER
+        """
+      }
+    }
+  }
+
+  post {
+    success {
+      echo "✅ Application deployed successfully to GKE"
+    }
+    failure {
+      echo "❌ Deployment failed"
+    }
+  }
+}
