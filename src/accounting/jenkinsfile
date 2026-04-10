@@ -33,7 +33,7 @@ pipeline {
     stage('Build Image') {
       steps {
         sh """
-        docker build -t $IMAGE:$BUILD_NUMBER .
+        docker build -t $IMAGE:$BUILD_NUMBER ./src/accounting
         docker push $IMAGE:$BUILD_NUMBER
         """
       }
