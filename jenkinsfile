@@ -8,7 +8,7 @@ pipeline {
     IMAGE_NAME = "demo-app"
     IMAGE = "us-central1-docker.pkg.dev/$PROJECT_ID/$REPO/demo-app"
     CLUSTER    = "nitwallah"
-    ZONE       = "us-central1-c"
+    ZONE       = "us-central1-a"
   }
 
   stages {
